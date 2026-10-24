@@ -6,7 +6,7 @@ variable "db_name" {
 variable "db_user"{
     type = string
     description = "User name"
-    default = "Normal (not root) MySQL user for WordPress. Do not use 'root' here."
+    default = "admin"
 }
 
 variable "db_password"{
