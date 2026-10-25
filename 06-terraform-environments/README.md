@@ -11,17 +11,18 @@ Compare it with project `05`, which does the same job with **workspaces**.
 06-terraform-environments/
 ├── modules/
 │   └── nginx/
-│       ├── main.tf         # Namespace + Deployment + Service
-│       └── variables.tf    # environment, replicas, node_port
-├── dev/
-│   └── main.tf             # Provider + module call with dev values
-└── prod/
-    └── main.tf             # Provider + module call with prod values
+│       ├── main.tf          # Namespace + Deployment + Service
+│       └── variables.tf     # environment, replicas, node_port
+└── environments/
+    ├── dev/
+    │   └── main.tf          # Provider + module call with dev values
+    └── prod/
+        └── main.tf          # Provider + module call with prod values
 ```
 
 - **The module** knows **how** to deploy nginx.
 - **Each environment folder** decides **where** (provider and cluster) and **with which values**.
-- Each folder is a separate root module, so each has its **own state**.
+- Each environment folder is a separate root module, so each has its **own state**.
 
 ## Environments
 
@@ -32,7 +33,7 @@ Compare it with project `05`, which does the same job with **workspaces**.
 | `replicas` | `1` | `3` |
 | `node_port` | `30001` | `30002` |
 
-The values are written directly in `dev/main.tf` and `prod/main.tf`.
+The values are written directly in `environments/dev/main.tf` and `environments/prod/main.tf`.
 They are not secret, and anyone can see all the settings of an environment in one file.
 
 ## Module variables
@@ -54,7 +55,7 @@ Each environment has its own state and does not know the others. Kubernetes chec
 ```bash
 minikube start
 
-cd dev
+cd environments/dev
 terraform init
 terraform apply
 
@@ -73,8 +74,8 @@ Always check your terminal: it shows which folder (environment) you are in.
 | | Workspaces (05) | Folders (06) |
 |---|---|---|
 | Code | One `main.tf` | One module + a small `main.tf` for each environment |
-| State | `terraform.tfstate.d/dev`, `/prod` | One state in each folder |
-| Choosing the environment | **Hidden** (`terraform workspace select`) | **Visible** (`cd dev`) |
+| State | `terraform.tfstate.d/dev`, `/prod` | One state in each environment folder |
+| Choosing the environment | **Hidden** (`terraform workspace select`) | **Visible** (`cd environments/dev`) |
 | Different values | Maps + `terraform.workspace` | Values in the module block |
 | Provider / cluster | The same for all | Each environment can use its own |
 | Best for | Quick, temporary, similar environments | Real dev / prod separation |
@@ -83,7 +84,8 @@ Always check your terminal: it shows which folder (environment) you are in.
 
 - **The provider configuration belongs in the root module, not in the child module.**
   The module says *how*, the environment says *where*. So prod could use a different cluster than dev.
-- **`source` paths:** `../` means "one folder up". A path without `./` or `../` makes Terraform look in the online Terraform Registry.
+- **`source` paths:** `../` means "one folder up". From `environments/dev`, the module is two folders up: `../../modules/nginx`.
+  A path without `./` or `../` makes Terraform look in the online Terraform Registry.
 - **Module arguments must match the module's variables.** A leftover argument (`site_name` from project `03`) gives "Unsupported argument".
 - **Validation:** `condition` must be `true` for a valid value, and `error_message` is shown when it is `false`.
   Use `var.<name>` in the condition, not the type name (`number`).
