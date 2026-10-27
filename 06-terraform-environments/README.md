@@ -80,6 +80,25 @@ Always check your terminal: it shows which folder (environment) you are in.
 | Provider / cluster | The same for all | Each environment can use its own |
 | Best for | Quick, temporary, similar environments | Real dev / prod separation |
 
+
+
+## Tests
+
+The module has tests in `modules/nginx/tests/nginx.tftest.hcl`:
+
+| Test | Checks |
+|---|---|
+| `dev_values` | With `environment = "dev"`, the namespace is `nginx-dev` and the NodePort is `30001` |
+| `invalid_node_port` | `node_port = 8080` must fail the validation |
+
+```bash
+cd modules/nginx
+terraform init
+terraform test     # Success! 2 passed, 0 failed.
+```
+
+The tests use `command = plan`, so they do not create anything.
+
 ## What I learned
 
 - **The provider configuration belongs in the root module, not in the child module.**
@@ -93,3 +112,6 @@ Always check your terminal: it shows which folder (environment) you are in.
 - **Each check works where the information is:** type → right kind, validation → right range, Kubernetes → port not used.
 - **Terraform reads only the folder you are in:** Running `terraform plan` in the parent folder gave "No configuration files".
   `terraform validate` said "Success", because empty code has no errors. 😄
+
+
+
