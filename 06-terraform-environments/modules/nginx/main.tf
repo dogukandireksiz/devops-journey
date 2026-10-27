@@ -68,3 +68,4 @@ resource "kubernetes_service_v1" "nginx"{
         }
     }
 } 
+
