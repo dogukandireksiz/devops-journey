@@ -10,7 +10,7 @@ My goal is not to copy code, but to understand **why** things work.
 | Phase | Topic | Status |
 |---|---|---|
 | 1 | **Terraform:** Docker, variables, modules, Kubernetes, environments, testing | ✅ Done |
-| 2 | **AWS + Terraform:** EC2, VPC, S3 | 🔜 Next |
+| 2 | **AWS + Terraform:** EC2, VPC, S3 | 🚧 In progress |
 | 3 | **Ansible:** Configuring servers | ⏳ |
 | 4 | **CI/CD:** Jenkins (basics), GitHub Actions, ArgoCD | ⏳ |
 | 5 | **Monitoring & Logging:** Prometheus, Grafana, ELK/EFK | ⏳ |
@@ -30,6 +30,7 @@ and monitoring and backups protect it.
 | 04 | [terraform-kubernetes-nginx](./04-terraform-kubernetes-nginx) | nginx on Kubernetes (Minikube) | Namespace, Deployment, Service, labels, locals |
 | 05 | [terraform-workspaces](./05-terraform-workspaces) | dev and prod with workspaces | Workspaces, maps, separate states |
 | 06 | [terraform-environments](./06-terraform-environments) | dev and prod with folders + tests | Environment folders, validation, `terraform test`, tflint |
+| 07 | [terraform-aws-s3](./07-terraform-aws-s3) | S3 bucket for remote state | AWS login, S3, versioning, `prevent_destroy`, remote state, locking |
 
 Every project has its own README with **how to run it** and **what I learned**.
 
@@ -40,4 +41,5 @@ Every project has its own README with **how to run it** and **what I learned**.
 - **Orchestration:** Kubernetes (Minikube, kubectl)
 - **Quality and security:** `terraform test`, tflint, Trivy
 - **Version control:** Git, GitHub, Conventional Commits
+- **Cloud:** AWS (S3), AWS CLI
 

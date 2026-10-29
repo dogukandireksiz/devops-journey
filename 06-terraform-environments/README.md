@@ -50,6 +50,23 @@ For example, `node_port = 8080` fails at `terraform plan` with a clear error mes
 Validation cannot check if a port is already used by another environment.
 Each environment has its own state and does not know the others. Kubernetes checks this at `apply` time.
 
+## Remote state
+
+The `dev` environment stores its state in S3 (bucket from project `07`):
+
+```hcl
+backend "s3" {
+  bucket       = "dogukan-devops-journey"
+  key          = "06-terraform-environments/environments/dev/terraform.tfstate"
+  region       = "eu-north-1"
+  use_lockfile = true
+}
+```
+
+Before `terraform init`, sign in with `aws login`.
+The resources run in Minikube, but the state lives in AWS.
+
+
 ## How to run
 
 ```bash
