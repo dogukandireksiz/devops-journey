@@ -6,6 +6,12 @@ terraform {
     }
   }
   required_version = ">= 1.6"
+  backend "s3"{
+    bucket = "dogukan-devops-journey"
+    key = "06-terraform-environments/environments/prod/terraform.tfstate"
+    region = "eu-north-1"
+    use_lockfile = true
+  }
 }
 
 provider "kubernetes" {

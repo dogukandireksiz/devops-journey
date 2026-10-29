@@ -6,6 +6,12 @@ terraform {
     }
   }
   required_version = ">= 1.6"
+  backend "s3"{
+    bucket = "dogukan-devops-journey"
+    key = "06-terraform-environments/environments/dev/terraform.tfstate"
+    region = "eu-north-1"
+    use_lockfile = true
+  }
 }
 
 
@@ -18,7 +24,7 @@ provider "kubernetes" {
 module "nginx"{
     source = "../../modules/nginx"
     environment = "dev"
-    replicas = 1
+    replicas = 2
     node_port = 30001
 
 }
