@@ -99,3 +99,19 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
   ip_protocol       = "-1" 
 }
 
+resource "aws_instance" "server"{
+    ami = data.aws_ami.ubuntu.id
+    instance_type = "t3.micro"
+    subnet_id = data.aws_subnet.public.id
+    vpc_security_group_ids = [aws_security_group.main.id]
+    key_name = aws_key_pair.devops-journey.key_name
+    associate_public_ip_address = true
+    
+    tags = {
+      Name = "devops-journey-server"
+    }
+}
+
+output "server_public_ip"{
+  value = aws_instance.server.public_ip
+}
