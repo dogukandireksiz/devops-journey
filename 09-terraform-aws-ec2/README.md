@@ -13,7 +13,7 @@ flowchart TB
 
     subgraph VPC["🏘️ VPC: 10.0.0.0/16 (from project 08)"]
         subgraph SUBNET["🏢 Public subnet: 10.0.1.0/24"]
-            SG["💂 Security Group<br/>in: SSH (22) only from my IP /32<br/>out: everything"]
+            SG["💂 Security Group<br/>in: SSH (22) only from my IP /32<br/>in: HTTP (80) from everyone<br/>out: everything"]
             EC2["🖥️ EC2: Ubuntu 24.04, t3.micro<br/>private IP: 10.0.1.x<br/>public key 🔒"]
             SG --- EC2
         end
@@ -108,8 +108,9 @@ A data source finds the newest Ubuntu 24.04 image:
 | resource | `aws_vpc_security_group_ingress_rule` | SSH from my IP |
 | resource | `aws_vpc_security_group_egress_rule` | All outbound traffic |
 | resource | `aws_instance.server` | The server 🖥️ |
+| resource | `aws_vpc_security_group_ingress_rule.http` | HTTP (port 80) from everyone |
 
-**Output:** `server_public_ip`
+**Outputs:** `server_public_ip` (for SSH) and `website_url` (open it in a browser)
 
 **Variable:** `my_ip`: my public IP with `/32`. Its value is in `terraform.tfvars` (not in Git).
 See `terraform.tfvars.example`.
@@ -129,6 +130,59 @@ terraform apply
 
 ssh -i ~/.ssh/devops-journey ubuntu@<server_public_ip>
 ```
+
+## 🌐 Web server with `user_data`
+
+The server installs **nginx** and writes its own web page **by itself**, on the first boot.
+No manual SSH work is needed.
+
+```hcl
+user_data = <<-EOF
+  #!/bin/bash
+  apt-get update && apt-get install -y nginx
+  echo "<h1>Hello World</h1>" > /var/www/html/index.html
+EOF
+
+user_data_replace_on_change = true
+```
+
+- **`user_data`** is a script that runs **only on the first boot** of the server.
+  (Like MySQL environment variables in project `02`: they are read only on the first start.)
+- **`<<-EOF ... EOF`** (heredoc) writes a multi-line string in HCL.
+- **`&&`**: the second command runs only if the first one succeeds.
+- **`-y`**: "answer yes", because nobody is at the keyboard when the script runs.
+- **`user_data_replace_on_change = true`**: if the script changes, Terraform **replaces** the server (`-/+`),
+  so the new script runs. Without it, a running server never sees the new script.
+
+### 💂 Why is port 80 open to everyone, but SSH is not?
+
+| Port | Gives | Who? |
+|---|---|---|
+| 22 (SSH) | Full control of the server 🔧 | Only me (`/32`) |
+| 80 (HTTP) | Only the web page 👀 | Everyone (`0.0.0.0/0`) |
+
+Like a shop: the shop window is open to everyone, but only the owner has the key to the storeroom. 🏪🔑
+Least privilege means **each door gets only the access it needs**.
+
+### ⏳ Running is not the same as ready
+
+After `apply`, the script still works in the background for 1-2 minutes.
+I opened the page too early and saw "Welcome to nginx" (nginx was installed, but my page was not written yet).
+After a refresh, I saw "Hello World".
+
+If the page does not work, check on the server:
+
+```bash
+cloud-init status                                  # done?
+ls -la /var/www/html/
+sudo tail -20 /var/log/cloud-init-output.log      # the script's logs
+```
+
+### ⚠️ The limit of `user_data`
+
+To change the page, I must **replace the whole server**, because `user_data` runs only once.
+A configuration management tool like **Ansible** can change a running server without replacing it.
+That is the next phase!
 
 ## 💰 Cost
 
@@ -151,3 +205,6 @@ The EC2 server is paid **per hour** (from my Free plan credits).
 ```
 - **Check the region in the console:** AWS shows resources per region.
 - **Manage with Terraform, not the console:** Stopping a server in the console creates drift.
+- **`user_data`** configures a server automatically on the first boot.
+- **Clean up test outputs:** Outputs should show what the user needs (`website_url`), not debugging values.
+- **Output names cannot have spaces:** use `website_url`, not `address of site`.
