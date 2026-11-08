@@ -39,13 +39,7 @@ data "aws_subnet" "public" {
 }
 
 
-output "vpc_output" {
-  value = data.aws_vpc.main.id
-}
 
-output "subnet_output" {
-  value = data.aws_subnet.public.cidr_block
-}
 
 data "aws_ami" "ubuntu" {
   most_recent      = true
@@ -56,10 +50,6 @@ data "aws_ami" "ubuntu" {
     values = ["ubuntu/images/hvm-ssd-gp3/ubuntu-noble-24.04-amd64-server-*"]
   }
 
-}
-
-output "ami_id_output"{
-    value = data.aws_ami.ubuntu.id
 }
 
 output "ami_name_output"{
@@ -99,6 +89,14 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_traffic_ipv4" {
   ip_protocol       = "-1" 
 }
 
+resource "aws_vpc_security_group_ingress_rule" "http"{
+  security_group_id = aws_security_group.main.id
+  cidr_ipv4 = "0.0.0.0/0"
+  from_port = 80
+  to_port = 80
+  ip_protocol = "tcp"
+}
+
 resource "aws_instance" "server"{
     ami = data.aws_ami.ubuntu.id
     instance_type = "t3.micro"
@@ -110,8 +108,20 @@ resource "aws_instance" "server"{
     tags = {
       Name = "devops-journey-server"
     }
+
+    user_data = <<-EOF
+      #!/bin/bash
+      apt-get update && apt-get install -y nginx
+      echo "<h1>Hello World</h1>" > /var/www/html/index.html
+    EOF
+
+    user_data_replace_on_change = true
 }
 
 output "server_public_ip"{
   value = aws_instance.server.public_ip
+}
+
+output "website_url"{
+  value = "http://${aws_instance.server.public_ip}"
 }
