@@ -67,7 +67,7 @@ resource "aws_key_pair" "devops-journey" {
 
 resource "aws_security_group" "main" {
   name        = "devops-journey-sg"
-  description = "Allow SSH from my IP"
+  description = "Allow SSH from my IP and HTTP from everyone"
   vpc_id      = data.aws_vpc.main.id
   tags = {
     Name = "devops-journey-sg"
@@ -109,13 +109,6 @@ resource "aws_instance" "server"{
       Name = "devops-journey-server"
     }
 
-    user_data = <<-EOF
-      #!/bin/bash
-      apt-get update && apt-get install -y nginx
-      echo "<h1>Hello World</h1>" > /var/www/html/index.html
-    EOF
-
-    user_data_replace_on_change = true
 }
 
 output "server_public_ip"{
