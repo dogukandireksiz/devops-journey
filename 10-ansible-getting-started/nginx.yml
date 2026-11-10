@@ -1,0 +1,16 @@
+- name: Nginx set up
+  hosts: web
+  become: true
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: true #Kurmadan önce apt update yap.
+    
+    - name: Ensuring Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: true
+        
